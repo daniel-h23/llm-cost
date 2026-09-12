@@ -64,8 +64,12 @@ The input is JSONL, one API call per line, in whatever shape your SDK logs:
 {"model":"gpt-4o-mini","date":"2026-06-01T10:03:00Z","team":"search","usage":{"prompt_tokens":31000,"completion_tokens":420,"prompt_tokens_details":{"cached_tokens":24000}}}
 ```
 
+`examples/usage.jsonl` has a full log built from lines like these, including one
+record naming a model the built-in table has never heard of, to show what a
+skipped line looks like:
+
 ```console
-$ llm-cost report usage.jsonl --group-by model
+$ llm-cost report examples/usage.jsonl --group-by model
 model             calls    input   cached  output     cost   $/call
 ----------------  -----  -------  -------  ------  -------  -------
 claude-opus-5         2   27,600  104,000   3,500  $0.3337  $0.1669
@@ -80,7 +84,7 @@ skipped 1 record(s) with no price: internal-router-v3
 `--group-by` takes `model`, `date`, or any other top-level field in your log:
 
 ```console
-$ llm-cost report usage.jsonl --group-by team
+$ llm-cost report examples/usage.jsonl --group-by team
 team    calls    input   cached  output     cost   $/call
 ------  -----  -------  -------  ------  -------  -------
 agents      2   27,600  104,000   3,500  $0.3337  $0.1669
