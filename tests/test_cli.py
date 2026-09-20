@@ -8,6 +8,9 @@ from llm_cost.cli import main
 EXAMPLES_USAGE = os.path.join(
     os.path.dirname(__file__), os.pardir, "examples", "usage.jsonl"
 )
+EXAMPLES_PRICING = os.path.join(
+    os.path.dirname(__file__), os.pardir, "examples", "pricing.json"
+)
 
 
 def test_report_against_examples_file_groups_by_model(capsys):
@@ -153,6 +156,22 @@ def test_pricing_override_replaces_table(tmp_path, capsys):
         "gpt-4o-mini",
     ]
     assert payload["groups"][0]["key"] == "internal-router-v3"
+
+
+def test_pricing_override_example_file_prices_the_previously_skipped_model(capsys):
+    exit_code = main(
+        ["--pricing", EXAMPLES_PRICING, "report", EXAMPLES_USAGE, "--json"]
+    )
+    out = capsys.readouterr().out
+
+    assert exit_code == 0
+    payload = json.loads(out)
+    assert payload["unknown_models"] == []
+    assert payload["unknown_count"] == 0
+
+    groups = dict((group["key"], group) for group in payload["groups"])
+    assert groups["internal-router-v3"]["cost"] == pytest.approx(0.001088)
+    assert groups["claude-opus-5"]["cost"] == pytest.approx(0.28218)
 
 
 def test_pricing_override_missing_file_is_bad_input(capsys):

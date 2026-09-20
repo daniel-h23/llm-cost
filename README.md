@@ -133,10 +133,13 @@ The built-in table holds public list prices captured on **2026-06-24**. It will
 drift, it does not know about your negotiated rates, discounts, batch pricing or
 regional surcharges, and it covers only a handful of models. Override it:
 
+`examples/pricing.json` shows the shape — a negotiated rate for one model, plus
+a price for `internal-router-v3`, the model `examples/usage.jsonl` couldn't
+otherwise price:
+
 ```json
 {
   "as_of": "2026-07-01",
-  "replace": false,
   "models": {
     "claude-opus-5": { "input": 4.25, "output": 21.0, "cached_input": 0.42, "cache_write": 5.3 },
     "internal-router-v3": { "input": 0.2, "output": 0.8, "provider": "internal" }
@@ -145,8 +148,12 @@ regional surcharges, and it covers only a handful of models. Override it:
 ```
 
 ```bash
-llm-cost --pricing prices.json report usage.jsonl
+llm-cost --pricing examples/pricing.json report examples/usage.jsonl
 ```
+
+Run against the same log as the report example above, this drops `claude-opus-5`
+from $0.3337 to $0.2822 for its two calls, and prices `internal-router-v3` at
+$0.0011 instead of skipping it.
 
 Entries merge onto the built-in table; set `"replace": true` to start from an
 empty table so an unlisted model raises instead of pricing against a stale

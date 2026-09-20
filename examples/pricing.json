@@ -1,0 +1,16 @@
+{
+  "as_of": "2026-07-01",
+  "models": {
+    "claude-opus-5": {
+      "input": 4.25,
+      "output": 21.0,
+      "cached_input": 0.42,
+      "cache_write": 5.3
+    },
+    "internal-router-v3": {
+      "input": 0.2,
+      "output": 0.8,
+      "provider": "internal"
+    }
+  }
+}
