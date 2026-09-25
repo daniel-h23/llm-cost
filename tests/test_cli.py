@@ -4,6 +4,7 @@ import os
 import pytest
 
 from llm_cost.cli import main
+from llm_cost.pricing import default_pricing
 
 EXAMPLES_USAGE = os.path.join(
     os.path.dirname(__file__), os.pardir, "examples", "usage.jsonl"
@@ -128,6 +129,43 @@ def test_models_lists_builtin_table(capsys):
     assert exit_code == 0
     assert "built-in" in out
     assert "claude-opus-5" in out
+
+
+def test_models_json_matches_pricing_table(capsys):
+    exit_code = main(["models", "--json"])
+    out = capsys.readouterr().out
+
+    assert exit_code == 0
+    payload = json.loads(out)
+    assert set(payload) == set(default_pricing().models())
+    assert payload["claude-opus-5"] == {
+        "provider": "anthropic",
+        "input": 5.00,
+        "output": 25.00,
+        "cached_input": 0.50,
+        "cache_write": 6.25,
+    }
+
+
+def test_models_json_with_pricing_override(tmp_path, capsys):
+    pricing_file = tmp_path / "prices.json"
+    pricing_file.write_text(
+        json.dumps(
+            {
+                "as_of": "2026-07-01",
+                "replace": True,
+                "models": {"internal-router-v3": {"input": 0.2, "output": 0.8}},
+            }
+        )
+    )
+
+    exit_code = main(["--pricing", str(pricing_file), "models", "--json"])
+    out = capsys.readouterr().out
+
+    assert exit_code == 0
+    payload = json.loads(out)
+    assert set(payload) == {"internal-router-v3"}
+    assert payload["internal-router-v3"]["input"] == 0.2
 
 
 def test_pricing_override_replaces_table(tmp_path, capsys):
